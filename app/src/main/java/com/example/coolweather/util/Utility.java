@@ -51,15 +51,15 @@ public class Utility {
         }
         return false;
     }
-    public static boolean handleCountryResponse(String response,int cityId){
+    public static boolean handleCountyResponse(String response,int cityId){
         if(!TextUtils.isEmpty(response)){
             try {
-                JSONArray allCountries=new JSONArray(response);
-                for(int i=0;i<allCountries.length();i++){
-                    JSONObject countryObject=allCountries.getJSONObject(i);
+                JSONArray allCounties=new JSONArray(response);
+                for(int i=0;i<allCounties.length();i++){
+                    JSONObject countyObject=allCounties.getJSONObject(i);
                     County county=new County();
-                    county.setCountyName(countryObject.getString("name"));
-                    county.setWeatherId(countryObject.getString("weather_id"));
+                    county.setCountyName(countyObject.getString("name"));
+                    county.setWeatherId(countyObject.getString("weather_id"));
                     county.setCityId(cityId);
                     county.save();
                 }
