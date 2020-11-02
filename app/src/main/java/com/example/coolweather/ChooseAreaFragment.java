@@ -149,7 +149,9 @@ public class ChooseAreaFragment extends Fragment {
                 String.valueOf(selectedCity.getId())).find(County.class);
         if (countyList.size()>0){
             dataList.clear();
-            for (County county:countyList)
+            for (County county:countyList){
+                dataList.add(county.getCountyName());
+            }
             adapter.notifyDataSetChanged();
             listView.setSelection(0);
             currentLevel=LEVEL_COUNTY;
