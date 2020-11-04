@@ -1,0 +1,208 @@
+[1mdiff --git a/app/src/main/java/com/example/coolweather/WeatherActivity.java b/app/src/main/java/com/example/coolweather/WeatherActivity.java[m
+[1mindex e606b5c..efec10e 100644[m
+[1m--- a/app/src/main/java/com/example/coolweather/WeatherActivity.java[m
+[1m+++ b/app/src/main/java/com/example/coolweather/WeatherActivity.java[m
+[36m@@ -2,10 +2,7 @@[m [mpackage com.example.coolweather;[m
+ [m
+ import androidx.appcompat.app.AppCompatActivity;[m
+ [m
+[31m-import android.annotation.SuppressLint;[m
+[31m-import android.content.SharedPreferences;[m
+ import android.os.Bundle;[m
+[31m-import android.preference.PreferenceManager;[m
+ [m
+ import android.util.Log;[m
+ import android.view.LayoutInflater;[m
+[36m@@ -15,10 +12,10 @@[m [mimport android.widget.ScrollView;[m
+ import android.widget.TextView;[m
+ import android.widget.Toast;[m
+ [m
+[32m+[m[32mimport com.example.coolweather.gson.AQI;[m[41m[m
+ import com.example.coolweather.gson.Forecast;[m
+ import com.example.coolweather.gson.Now;[m
+ import com.example.coolweather.gson.Suggestion;[m
+[31m-import com.example.coolweather.gson.Weather;[m
+ import com.example.coolweather.util.HttpUtil;[m
+ import com.example.coolweather.util.Utility;[m
+ [m
+[36m@@ -85,9 +82,6 @@[m [mpublic class WeatherActivity extends AppCompatActivity {[m
+ [m
+     //根据天气id请求城市天气信息[m
+     public void requestWeather(final String weatherId, final String countyName){[m
+[31m-[m
+[31m-[m
+[31m-[m
+         String weatherUrl_now="https://devapi.qweather.com/v7/weather/now?location="+weatherId+[m
+                 "&key=3e7d892cfca24595b0b27b07d49af590";[m
+         HttpUtil.sendOkHttpRequest(weatherUrl_now, new Callback() {[m
+[36m@@ -107,21 +101,46 @@[m [mpublic class WeatherActivity extends AppCompatActivity {[m
+                     throws IOException {[m
+                 final String responseText=response.body().string();[m
+                 final Now now=Utility.handleNowResponse(responseText);[m
+[31m-[m
+                 now.setCityName(countyName);[m
+[31m-                Log.d("实况天气：",now.time);[m
+                 runOnUiThread(new Runnable() {[m
+                     @Override[m
+                     public void run() {[m
+                         showNowInfo(now);[m
+                     }[m
+                 });[m
+[31m-[m
+[31m-[m
+             }[m
+[32m+[m[32m        });[m[41m[m
+ [m
+[32m+[m[32m        String weatherUrl_aqi="https://devapi.qweather.com/v7/air/now?location="+weatherId+[m[41m[m
+[32m+[m[32m                "&key=3e7d892cfca24595b0b27b07d49af590";[m[41m[m
+[32m+[m[32m        HttpUtil.sendOkHttpRequest(weatherUrl_aqi, new Callback() {[m[41m[m
+[32m+[m[32m            @Override[m[41m[m
+[32m+[m[32m            public void onFailure(@NotNull Call call, @NotNull IOException e) {[m[41m[m
+[32m+[m[32m                e.printStackTrace();[m[41m[m
+[32m+[m[32m                runOnUiThread(new Runnable() {[m[41m[m
+[32m+[m[32m                    @Override[m[41m[m
+[32m+[m[32m                    public void run() {[m[41m[m
+[32m+[m[32m                        Toast.makeText(WeatherActivity.this,"获取天气信息失败",[m[41m[m
+[32m+[m[32m                                Toast.LENGTH_SHORT).show();[m[41m[m
+[32m+[m[32m                    }[m[41m[m
+[32m+[m[32m                });[m[41m[m
+[32m+[m[32m            }[m[41m[m
+[32m+[m[32m            @Override[m[41m[m
+[32m+[m[32m            public void onResponse(@NotNull Call call, @NotNull Response response)[m[41m[m
+[32m+[m[32m                    throws IOException {[m[41m[m
+[32m+[m[32m                final String responseText=response.body().string();[m[41m[m
+[32m+[m[32m                final List<AQI> aqi=Utility.handleAQIResponse(responseText);[m[41m[m
+[32m+[m[32m                runOnUiThread(new Runnable() {[m[41m[m
+[32m+[m[32m                    @Override[m[41m[m
+[32m+[m[32m                    public void run() {[m[41m[m
+[32m+[m[32m                        showAQIInfo(aqi);[m[41m[m
+[32m+[m[32m                    }[m[41m[m
+[32m+[m[32m                });[m[41m[m
+[32m+[m[32m            }[m[41m[m
+         });[m
+[31m-        String weatherUrl_forecast="https://devapi.qweather.com/v7/weather/3d?&location="+weatherId+[m
+[32m+[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m        String weatherUrl_forecast="https://devapi.qweather.com/v7/weather/7d?&location="+weatherId+[m[41m[m
+                 "&key=3e7d892cfca24595b0b27b07d49af590";[m
+         HttpUtil.sendOkHttpRequest(weatherUrl_forecast, new Callback() {[m
+             @Override[m
+[36m@@ -203,6 +222,19 @@[m [mpublic class WeatherActivity extends AppCompatActivity {[m
+ [m
+     }[m
+ [m
+[32m+[m[32m    private void  showAQIInfo(List<AQI> aqi){[m[41m[m
+[32m+[m[32m        String Aqi = null;[m[41m[m
+[32m+[m[32m        String pm25 = null;[m[41m[m
+[32m+[m[32m        for(AQI aqi1:aqi){[m[41m[m
+[32m+[m[32m            Aqi=aqi1.aqi;[m[41m[m
+[32m+[m[32m            pm25=aqi1.pm25;[m[41m[m
+[32m+[m[32m            break;[m[41m[m
+[32m+[m[32m        }[m[41m[m
+[32m+[m[32m        aqiText.setText(Aqi);[m[41m[m
+[32m+[m[32m        pm25Text.setText(pm25);[m[41m[m
+[32m+[m[32m        weatherLayout.setVisibility(View.VISIBLE);[m[41m[m
+[32m+[m[32m    }[m[41m[m
+[32m+[m[41m[m
+     private void  showNowInfo(Now now){[m
+         String cityName=now.cityName;[m
+         String updateTime=now.time.split("T")[0];[m
+[36m@@ -212,8 +244,7 @@[m [mpublic class WeatherActivity extends AppCompatActivity {[m
+         titleUpdateTime.setText(updateTime);[m
+         degreeText.setText(degree);[m
+         weatherInfoText.setText(weatherInfo);[m
+[31m-        aqiText.setText("null");[m
+[31m-        pm25Text.setText("null");[m
+[32m+[m[41m[m
+         weatherLayout.setVisibility(View.VISIBLE);[m
+     }[m
+ [m
+[1mdiff --git a/app/src/main/java/com/example/coolweather/gson/AQI.java b/app/src/main/java/com/example/coolweather/gson/AQI.java[m
+[1mindex 1857ad1..90efb07 100644[m
+[1m--- a/app/src/main/java/com/example/coolweather/gson/AQI.java[m
+[1m+++ b/app/src/main/java/com/example/coolweather/gson/AQI.java[m
+[36m@@ -1,9 +1,12 @@[m
+ package com.example.coolweather.gson;[m
+ [m
+[32m+[m[32mimport com.google.gson.annotations.SerializedName;[m[41m[m
+[32m+[m[41m[m
+ public class AQI {[m
+[31m-    public AQICity city;[m
+[31m-    public class AQICity{[m
+[31m-        public String aqi;[m
+[31m-        public String pm25;[m
+[31m-    }[m
+[32m+[m[32m    @SerializedName("aqi")[m[41m[m
+[32m+[m[32m    public String aqi;[m[41m[m
+[32m+[m[32m    @SerializedName("pm2p5")[m[41m[m
+[32m+[m[32m    public String pm25;[m[41m[m
+[32m+[m[41m[m
+[32m+[m[41m[m
+ }[m
+[1mdiff --git a/app/src/main/java/com/example/coolweather/util/Utility.java b/app/src/main/java/com/example/coolweather/util/Utility.java[m
+[1mindex aaa7330..a8bc2af 100644[m
+[1m--- a/app/src/main/java/com/example/coolweather/util/Utility.java[m
+[1m+++ b/app/src/main/java/com/example/coolweather/util/Utility.java[m
+[36m@@ -6,10 +6,10 @@[m [mimport android.util.Log;[m
+ import com.example.coolweather.db.City;[m
+ import com.example.coolweather.db.County;[m
+ import com.example.coolweather.db.Province;[m
+[32m+[m[32mimport com.example.coolweather.gson.AQI;[m[41m[m
+ import com.example.coolweather.gson.Forecast;[m
+ import com.example.coolweather.gson.Now;[m
+ import com.example.coolweather.gson.Suggestion;[m
+[31m-import com.example.coolweather.gson.Weather;[m
+ import com.google.gson.Gson;[m
+ import com.google.gson.reflect.TypeToken;[m
+ [m
+[36m@@ -82,31 +82,30 @@[m [mpublic class Utility {[m
+         }[m
+         return false;[m
+     }[m
+[31m-    public static Weather handleWeatherResponse(String response){[m
+[32m+[m[41m[m
+[32m+[m[32m    public static Now handleNowResponse(String response){[m[41m[m
+         try {[m
+ [m
+             JSONObject jsonObject=new JSONObject(response);[m
+[31m-            JSONArray jsonArray=jsonObject.getJSONArray("now");[m
+[31m-            String weatherContent=jsonArray.getJSONObject(0).toString();[m
+[31m-[m
+[31m-            return new Gson().fromJson(weatherContent,Weather.class);[m
+[32m+[m[32m            JSONObject nowObject=jsonObject.getJSONObject("now");[m[41m[m
+[32m+[m[32m            String nowContent=nowObject.toString();[m[41m[m
+[32m+[m[32m            return new Gson().fromJson(nowContent,Now.class);[m[41m[m
+         } catch (Exception e) {[m
+             e.printStackTrace();[m
+         }[m
+         return null;[m
+     }[m
+ [m
+[31m-    public static Now handleNowResponse(String response){[m
+[32m+[m[32m    public static List<AQI> handleAQIResponse(String response){[m[41m[m
+         try {[m
+ [m
+             JSONObject jsonObject=new JSONObject(response);[m
+[31m-            JSONObject nowObject=jsonObject.getJSONObject("now");[m
+[31m-            String nowContent=nowObject.toString();[m
+[31m-[m
+[31m-[m
+[32m+[m[32m            JSONArray jsonArray=jsonObject.getJSONArray("daily");[m[41m[m
+[32m+[m[32m            String aqiContent=jsonArray.toString();[m[41m[m
+ [m
+[32m+[m[32m            return new Gson().fromJson(aqiContent,new TypeToken<List<AQI>>() {}.getType());[m[41m[m
+[32m+[m[32m//            Log.d("json信息：",aqiContent);[m[41m[m
+ [m
+[31m-            return new Gson().fromJson(nowContent,Now.class);[m
+         } catch (Exception e) {[m
+             e.printStackTrace();[m
+         }[m
+[36m@@ -132,7 +131,7 @@[m [mpublic class Utility {[m
+             JSONObject jsonObject=new JSONObject(response);[m
+             JSONArray jsonArray=jsonObject.getJSONArray("daily");[m
+             String suggestContent=jsonArray.toString();[m
+[31m-            Log.d("json信息:",suggestContent);[m
+[32m+[m[32m//            Log.d("json信息:",suggestContent);[m[41m[m
+             return new Gson().fromJson(suggestContent,new TypeToken<List<Suggestion>>() {}.getType());[m
+         } catch (Exception e) {[m
+             e.printStackTrace();[m

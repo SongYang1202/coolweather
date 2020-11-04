@@ -2,10 +2,7 @@ package com.example.coolweather;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.annotation.SuppressLint;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,10 +12,10 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.coolweather.gson.AQI;
 import com.example.coolweather.gson.Forecast;
 import com.example.coolweather.gson.Now;
 import com.example.coolweather.gson.Suggestion;
-import com.example.coolweather.gson.Weather;
 import com.example.coolweather.util.HttpUtil;
 import com.example.coolweather.util.Utility;
 
@@ -85,9 +82,6 @@ public class WeatherActivity extends AppCompatActivity {
 
     //根据天气id请求城市天气信息
     public void requestWeather(final String weatherId, final String countyName){
-
-
-
         String weatherUrl_now="https://devapi.qweather.com/v7/weather/now?location="+weatherId+
                 "&key=3e7d892cfca24595b0b27b07d49af590";
         HttpUtil.sendOkHttpRequest(weatherUrl_now, new Callback() {
@@ -107,20 +101,45 @@ public class WeatherActivity extends AppCompatActivity {
                     throws IOException {
                 final String responseText=response.body().string();
                 final Now now=Utility.handleNowResponse(responseText);
-
                 now.setCityName(countyName);
-                Log.d("实况天气：",now.time);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         showNowInfo(now);
                     }
                 });
-
-
             }
-
         });
+
+        String weatherUrl_aqi="https://devapi.qweather.com/v7/air/now?location="+weatherId+
+                "&key=3e7d892cfca24595b0b27b07d49af590";
+        HttpUtil.sendOkHttpRequest(weatherUrl_aqi, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                e.printStackTrace();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(WeatherActivity.this,"获取天气信息失败",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response)
+                    throws IOException {
+                final String responseText=response.body().string();
+                final AQI aqi=Utility.handleAQIResponse(responseText);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showAQIInfo(aqi);
+                    }
+                });
+            }
+        });
+
+
         String weatherUrl_forecast="https://devapi.qweather.com/v7/weather/3d?&location="+weatherId+
                 "&key=3e7d892cfca24595b0b27b07d49af590";
         HttpUtil.sendOkHttpRequest(weatherUrl_forecast, new Callback() {
@@ -203,6 +222,15 @@ public class WeatherActivity extends AppCompatActivity {
 
     }
 
+    private void  showAQIInfo(AQI aqi){
+        String Aqi = aqi.aqi;
+        String pm25 = aqi.pm25;
+
+        aqiText.setText(Aqi);
+        pm25Text.setText(pm25);
+        weatherLayout.setVisibility(View.VISIBLE);
+    }
+
     private void  showNowInfo(Now now){
         String cityName=now.cityName;
         String updateTime=now.time.split("T")[0];
@@ -212,8 +240,8 @@ public class WeatherActivity extends AppCompatActivity {
         titleUpdateTime.setText(updateTime);
         degreeText.setText(degree);
         weatherInfoText.setText(weatherInfo);
-        aqiText.setText("null");
-        pm25Text.setText("null");
+
+
         weatherLayout.setVisibility(View.VISIBLE);
     }
 

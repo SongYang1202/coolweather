@@ -6,10 +6,10 @@ import android.util.Log;
 import com.example.coolweather.db.City;
 import com.example.coolweather.db.County;
 import com.example.coolweather.db.Province;
+import com.example.coolweather.gson.AQI;
 import com.example.coolweather.gson.Forecast;
 import com.example.coolweather.gson.Now;
 import com.example.coolweather.gson.Suggestion;
-import com.example.coolweather.gson.Weather;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -82,19 +82,6 @@ public class Utility {
         }
         return false;
     }
-    public static Weather handleWeatherResponse(String response){
-        try {
-
-            JSONObject jsonObject=new JSONObject(response);
-            JSONArray jsonArray=jsonObject.getJSONArray("now");
-            String weatherContent=jsonArray.getJSONObject(0).toString();
-
-            return new Gson().fromJson(weatherContent,Weather.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     public static Now handleNowResponse(String response){
         try {
@@ -102,11 +89,20 @@ public class Utility {
             JSONObject jsonObject=new JSONObject(response);
             JSONObject nowObject=jsonObject.getJSONObject("now");
             String nowContent=nowObject.toString();
-
-
-
-
             return new Gson().fromJson(nowContent,Now.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static AQI handleAQIResponse(String response){
+        try {
+
+            JSONObject jsonObject=new JSONObject(response);
+            JSONObject aqiObject=jsonObject.getJSONObject("now");
+            String aqiContent=aqiObject.toString();
+            return new Gson().fromJson(aqiContent,AQI.class);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -132,7 +128,7 @@ public class Utility {
             JSONObject jsonObject=new JSONObject(response);
             JSONArray jsonArray=jsonObject.getJSONArray("daily");
             String suggestContent=jsonArray.toString();
-            Log.d("json信息:",suggestContent);
+//            Log.d("json信息:",suggestContent);
             return new Gson().fromJson(suggestContent,new TypeToken<List<Suggestion>>() {}.getType());
         } catch (Exception e) {
             e.printStackTrace();

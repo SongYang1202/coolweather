@@ -4,11 +4,6 @@ import com.google.gson.annotations.SerializedName;
 
 public class Now {
     public String cityName;
-
-    public void setCityName(String cityName) {
-        this.cityName = cityName;
-    }
-
     @SerializedName("obsTime")
     public String time;
 
@@ -19,5 +14,6 @@ public class Now {
     public String info;
 
 
-
+    public void setCityName(String countyName) {
+    }
 }
