@@ -1,0 +1,203 @@
+[1mdiff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml[m
+[1mindex f031517..65b65d6 100644[m
+[1m--- a/app/src/main/AndroidManifest.xml[m
+[1m+++ b/app/src/main/AndroidManifest.xml[m
+[36m@@ -1,19 +1,24 @@[m
+ <?xml version="1.0" encoding="utf-8"?>[m
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"[m
+     xmlns:tools="http://schemas.android.com/tools"[m
+[31m-    package="com.example.coolweather">[m
+[31m-    <uses-permission android:name="android.permission.INTERNET"/>[m
+[32m+[m[32m    package="com.example.coolweather"[m[41m[m
+[32m+[m[32m    >[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m    <uses-permission android:name="android.permission.INTERNET" />[m[41m[m
+[32m+[m[41m[m
+[32m+[m[41m[m
+ [m
+     <application[m
+         android:name="org.litepal.LitePalApplication"[m
+[31m-        android:networkSecurityConfig="@xml/network_security_config"[m
+         android:allowBackup="true"[m
+         android:icon="@mipmap/ic_launcher"[m
+         android:label="@string/app_name"[m
+[32m+[m[32m        android:networkSecurityConfig="@xml/network_security_config"[m[41m[m
+         android:roundIcon="@mipmap/ic_launcher_round"[m
+         android:supportsRtl="true"[m
+         android:theme="@style/AppTheme"[m
+         tools:targetApi="n">[m
+[32m+[m[32m        <activity android:name=".WeatherActivity" />[m[41m[m
+         <activity android:name=".MainActivity">[m
+             <intent-filter>[m
+                 <action android:name="android.intent.action.MAIN" />[m
+[1mdiff --git a/app/src/main/java/com/example/coolweather/ChooseAreaFragment.java b/app/src/main/java/com/example/coolweather/ChooseAreaFragment.java[m
+[1mindex b68e8f0..5aeaa84 100644[m
+[1m--- a/app/src/main/java/com/example/coolweather/ChooseAreaFragment.java[m
+[1m+++ b/app/src/main/java/com/example/coolweather/ChooseAreaFragment.java[m
+[36m@@ -1,6 +1,7 @@[m
+ package com.example.coolweather;[m
+ [m
+ import android.app.ProgressDialog;[m
+[32m+[m[32mimport android.content.Intent;[m[41m[m
+ import android.os.Bundle;[m
+ import android.view.LayoutInflater;[m
+ import android.view.View;[m
+[36m@@ -30,6 +31,7 @@[m [mimport org.litepal.crud.DataSupport;[m
+ import java.io.IOException;[m
+ import java.util.ArrayList;[m
+ import java.util.List;[m
+[32m+[m[32mimport java.util.Objects;[m[41m[m
+ [m
+ import okhttp3.Call;[m
+ import okhttp3.Callback;[m
+[36m@@ -87,6 +89,14 @@[m [mpublic class ChooseAreaFragment extends Fragment {[m
+                     selectedCity=cityList.get(position);[m
+                     queryCounties();[m
+ [m
+[32m+[m[32m                }else if(currentLevel ==LEVEL_COUNTY){[m[41m[m
+[32m+[m[32m                    String weatherId=countyList.get(position).getWeatherId();[m[41m[m
+[32m+[m[32m                    String countyName=countyList.get(position).getCountyName();[m[41m[m
+[32m+[m[32m                    Intent intent=new Intent(getActivity(),WeatherActivity.class);[m[41m[m
+[32m+[m[32m                    intent.putExtra("weather_id",weatherId);[m[41m[m
+[32m+[m[32m                    intent.putExtra("county_name",countyName);[m[41m[m
+[32m+[m[32m                    startActivity(intent);[m[41m[m
+[32m+[m[32m                    Objects.requireNonNull(getActivity()).finish();[m[41m[m
+                 }[m
+             }[m
+         });[m
+[1mdiff --git a/app/src/main/java/com/example/coolweather/MainActivity.java b/app/src/main/java/com/example/coolweather/MainActivity.java[m
+[1mindex 2819cea..34c7b1d 100644[m
+[1m--- a/app/src/main/java/com/example/coolweather/MainActivity.java[m
+[1m+++ b/app/src/main/java/com/example/coolweather/MainActivity.java[m
+[36m@@ -2,7 +2,10 @@[m [mpackage com.example.coolweather;[m
+ [m
+ import androidx.appcompat.app.AppCompatActivity;[m
+ [m
+[32m+[m[32mimport android.content.Intent;[m[41m[m
+[32m+[m[32mimport android.content.SharedPreferences;[m[41m[m
+ import android.os.Bundle;[m
+[32m+[m[32mimport android.preference.PreferenceManager;[m[41m[m
+ [m
+ public class MainActivity extends AppCompatActivity {[m
+ [m
+[36m@@ -10,5 +13,12 @@[m [mpublic class MainActivity extends AppCompatActivity {[m
+     protected void onCreate(Bundle savedInstanceState) {[m
+         super.onCreate(savedInstanceState);[m
+         setContentView(R.layout.activity_main);[m
+[32m+[m[32m        SharedPreferences pres= PreferenceManager.getDefaultSharedPreferences(this);[m[41m[m
+[32m+[m[32m        if(pres.getString("weather",null)!=null){[m[41m[m
+[32m+[m[32m            Intent intent=new Intent(this,WeatherActivity.class);[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m            startActivity(intent);[m[41m[m
+[32m+[m[32m            finish();[m[41m[m
+[32m+[m[32m        }[m[41m[m
+     }[m
+ }[m
+\ No newline at end of file[m
+[1mdiff --git a/app/src/main/java/com/example/coolweather/util/Utility.java b/app/src/main/java/com/example/coolweather/util/Utility.java[m
+[1mindex 2dbacd7..aaa7330 100644[m
+[1m--- a/app/src/main/java/com/example/coolweather/util/Utility.java[m
+[1m+++ b/app/src/main/java/com/example/coolweather/util/Utility.java[m
+[36m@@ -1,14 +1,23 @@[m
+ package com.example.coolweather.util;[m
+ [m
+ import android.text.TextUtils;[m
+[32m+[m[32mimport android.util.Log;[m[41m[m
+ [m
+ import com.example.coolweather.db.City;[m
+ import com.example.coolweather.db.County;[m
+ import com.example.coolweather.db.Province;[m
+[32m+[m[32mimport com.example.coolweather.gson.Forecast;[m[41m[m
+[32m+[m[32mimport com.example.coolweather.gson.Now;[m[41m[m
+[32m+[m[32mimport com.example.coolweather.gson.Suggestion;[m[41m[m
+[32m+[m[32mimport com.example.coolweather.gson.Weather;[m[41m[m
+[32m+[m[32mimport com.google.gson.Gson;[m[41m[m
+[32m+[m[32mimport com.google.gson.reflect.TypeToken;[m[41m[m
+ [m
+ import org.json.JSONArray;[m
+ import org.json.JSONObject;[m
+ [m
+[32m+[m[32mimport java.util.List;[m[41m[m
+[32m+[m[41m[m
+ public class Utility {[m
+     //    解析处理服务器返回的省级数据[m
+     public static boolean handleProvinceResponse(String response){[m
+[36m@@ -26,6 +35,7 @@[m [mpublic class Utility {[m
+             }[m
+             catch (Exception e) {[m
+                 e.printStackTrace();[m
+[32m+[m[32m                return false;[m[41m[m
+             }[m
+         }[m
+         return false;[m
+[36m@@ -46,6 +56,7 @@[m [mpublic class Utility {[m
+                 return true;[m
+             } catch (Exception e) {[m
+                 e.printStackTrace();[m
+[32m+[m[32m                return false;[m[41m[m
+             }[m
+ [m
+         }[m
+[36m@@ -71,4 +82,62 @@[m [mpublic class Utility {[m
+         }[m
+         return false;[m
+     }[m
+[32m+[m[32m    public static Weather handleWeatherResponse(String response){[m[41m[m
+[32m+[m[32m        try {[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m            JSONObject jsonObject=new JSONObject(response);[m[41m[m
+[32m+[m[32m            JSONArray jsonArray=jsonObject.getJSONArray("now");[m[41m[m
+[32m+[m[32m            String weatherContent=jsonArray.getJSONObject(0).toString();[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m            return new Gson().fromJson(weatherContent,Weather.class);[m[41m[m
+[32m+[m[32m        } catch (Exception e) {[m[41m[m
+[32m+[m[32m            e.printStackTrace();[m[41m[m
+[32m+[m[32m        }[m[41m[m
+[32m+[m[32m        return null;[m[41m[m
+[32m+[m[32m    }[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m    public static Now handleNowResponse(String response){[m[41m[m
+[32m+[m[32m        try {[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m            JSONObject jsonObject=new JSONObject(response);[m[41m[m
+[32m+[m[32m            JSONObject nowObject=jsonObject.getJSONObject("now");[m[41m[m
+[32m+[m[32m            String nowContent=nowObject.toString();[m[41m[m
+[32m+[m[41m[m
+[32m+[m[41m[m
+[32m+[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m            return new Gson().fromJson(nowContent,Now.class);[m[41m[m
+[32m+[m[32m        } catch (Exception e) {[m[41m[m
+[32m+[m[32m            e.printStackTrace();[m[41m[m
+[32m+[m[32m        }[m[41m[m
+[32m+[m[32m        return null;[m[41m[m
+[32m+[m[32m    }[m[41m[m
+[32m+[m[32m    public static List<Forecast> handleForeResponse(String response){[m[41m[m
+[32m+[m[32m        try {[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m            JSONObject jsonObject=new JSONObject(response);[m[41m[m
+[32m+[m[32m            JSONArray jsonArray=jsonObject.getJSONArray("daily");[m[41m[m
+[32m+[m[32m            String foreContent=jsonArray.toString();[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m            return new Gson().fromJson(foreContent,new TypeToken<List<Forecast>>() {}.getType());[m[41m[m
+[32m+[m[32m        } catch (Exception e) {[m[41m[m
+[32m+[m[32m            e.printStackTrace();[m[41m[m
+[32m+[m[32m        }[m[41m[m
+[32m+[m[32m        return null;[m[41m[m
+[32m+[m[32m    }[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m    public static List<Suggestion> handleSuggestResponse(String response){[m[41m[m
+[32m+[m[32m        try {[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m            JSONObject jsonObject=new JSONObject(response);[m[41m[m
+[32m+[m[32m            JSONArray jsonArray=jsonObject.getJSONArray("daily");[m[41m[m
+[32m+[m[32m            String suggestContent=jsonArray.toString();[m[41m[m
+[32m+[m[32m            Log.d("json信息:",suggestContent);[m[41m[m
+[32m+[m[32m            return new Gson().fromJson(suggestContent,new TypeToken<List<Suggestion>>() {}.getType());[m[41m[m
+[32m+[m[32m        } catch (Exception e) {[m[41m[m
+[32m+[m[32m            e.printStackTrace();[m[41m[m
+[32m+[m[32m        }[m[41m[m
+[32m+[m[32m        return null;[m[41m[m
+[32m+[m[32m    }[m[41m[m
+[32m+[m[41m[m
+ }[m
