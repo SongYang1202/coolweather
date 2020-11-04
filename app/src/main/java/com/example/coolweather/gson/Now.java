@@ -14,6 +14,4 @@ public class Now {
     public String info;
 
 
-    public void setCityName(String countyName) {
-    }
 }

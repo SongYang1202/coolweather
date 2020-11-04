@@ -2,8 +2,11 @@ package com.example.coolweather;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -59,9 +62,7 @@ public class WeatherActivity extends AppCompatActivity {
         sportText=(TextView)findViewById(R.id.sport_text);
         String weatherId=getIntent().getStringExtra("weather_id");
         String countyName=getIntent().getStringExtra("county_name");
-
         weatherLayout.setVisibility(View.INVISIBLE);
-
         requestWeather(weatherId, countyName);
 
 
@@ -101,10 +102,14 @@ public class WeatherActivity extends AppCompatActivity {
                     throws IOException {
                 final String responseText=response.body().string();
                 final Now now=Utility.handleNowResponse(responseText);
-                now.setCityName(countyName);
+                assert now != null;
+
+                now.cityName=countyName;
+
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+
                         showNowInfo(now);
                     }
                 });
@@ -133,6 +138,7 @@ public class WeatherActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+
                         showAQIInfo(aqi);
                     }
                 });
@@ -162,6 +168,7 @@ public class WeatherActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+
                         showForeInfo(forecastList);
                     }
                 });
@@ -192,6 +199,11 @@ public class WeatherActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+//                        SharedPreferences.Editor editor= PreferenceManager
+//                                .getDefaultSharedPreferences
+//                                (WeatherActivity.this).edit();
+//                        editor.putString("weather",responseText);
+//                        editor.apply();
                         showSuggestInfo(suggestList);
                     }
                 });
@@ -208,13 +220,7 @@ public class WeatherActivity extends AppCompatActivity {
 //        runOnUiThread(new Runnable() {
 //            @Override
 //            public void run() {
-////                @SuppressLint("CommitPrefEdits")
-////                SharedPreferences.Editor editor=PreferenceManager
-////                        .getDefaultSharedPreferences
-////                                (WeatherActivity.this)
-////                        .edit();
 ////
-////                editor.apply();
 //                showWeatherInfo(weather);
 //
 //            }
@@ -228,11 +234,12 @@ public class WeatherActivity extends AppCompatActivity {
 
         aqiText.setText(Aqi);
         pm25Text.setText(pm25);
-        weatherLayout.setVisibility(View.VISIBLE);
+
     }
 
     private void  showNowInfo(Now now){
         String cityName=now.cityName;
+
         String updateTime=now.time.split("T")[0];
         String degree=now.temperature+"℃";
         String weatherInfo=now.info;
