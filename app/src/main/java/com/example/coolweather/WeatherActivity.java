@@ -64,11 +64,9 @@ public class WeatherActivity extends AppCompatActivity {
         String countyName=getIntent().getStringExtra("county_name");
 
         weatherLayout.setVisibility(View.INVISIBLE);
-        Weather weather=new Weather();
-        weather=requestWeather(weather,weatherId,countyName);
-        if(weather!=null){
-            Log.d("实况天气：",weather.now.info);
-        }
+
+        requestWeather(weatherId, countyName);
+
 
 //        SharedPreferences pres= PreferenceManager.getDefaultSharedPreferences(this);
 //        String weatherString=pres.getString("weather",null);
@@ -86,10 +84,10 @@ public class WeatherActivity extends AppCompatActivity {
     }
 
     //根据天气id请求城市天气信息
-    public Weather requestWeather(final Weather weather, final String weatherId, final String countyName){
+    public void requestWeather(final String weatherId, final String countyName){
 
 
-        weather.setCityName(countyName);
+
         String weatherUrl_now="https://devapi.qweather.com/v7/weather/now?location="+weatherId+
                 "&key=3e7d892cfca24595b0b27b07d49af590";
         HttpUtil.sendOkHttpRequest(weatherUrl_now, new Callback() {
@@ -110,7 +108,14 @@ public class WeatherActivity extends AppCompatActivity {
                 final String responseText=response.body().string();
                 final Now now=Utility.handleNowResponse(responseText);
 
-                weather.setNow(now);
+                now.setCityName(countyName);
+                Log.d("实况天气：",now.time);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showNowInfo(now);
+                    }
+                });
 
 
             }
@@ -135,7 +140,12 @@ public class WeatherActivity extends AppCompatActivity {
                     throws IOException {
                 final String responseText=response.body().string();
                 final List<Forecast> forecastList=Utility.handleForeResponse(responseText);
-                weather.setForecastList(forecastList);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showForeInfo(forecastList);
+                    }
+                });
 
 
             }
@@ -160,7 +170,12 @@ public class WeatherActivity extends AppCompatActivity {
                     throws IOException {
                 final String responseText=response.body().string();
                 final List<Suggestion> suggestList=Utility.handleSuggestResponse(responseText);
-                weather.setSuggestionList(suggestList);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showSuggestInfo(suggestList);
+                    }
+                });
 
 
             }
@@ -170,72 +185,72 @@ public class WeatherActivity extends AppCompatActivity {
 
 
 
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-//                @SuppressLint("CommitPrefEdits")
-//                SharedPreferences.Editor editor=PreferenceManager
-//                        .getDefaultSharedPreferences
-//                                (WeatherActivity.this)
-//                        .edit();
+
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+////                @SuppressLint("CommitPrefEdits")
+////                SharedPreferences.Editor editor=PreferenceManager
+////                        .getDefaultSharedPreferences
+////                                (WeatherActivity.this)
+////                        .edit();
+////
+////                editor.apply();
+//                showWeatherInfo(weather);
 //
-//                editor.apply();
-                showWeatherInfo(weather);
+//            }
+//        });
 
-            }
-        });
-        return weather;
     }
 
-    //处理并展示Weather实体类中的数据
-    private void  showWeatherInfo(Weather weather){
-        try {
+    private void  showNowInfo(Now now){
+        String cityName=now.cityName;
+        String updateTime=now.time.split("T")[0];
+        String degree=now.temperature+"℃";
+        String weatherInfo=now.info;
+        titleCity.setText(cityName);
+        titleUpdateTime.setText(updateTime);
+        degreeText.setText(degree);
+        weatherInfoText.setText(weatherInfo);
+        aqiText.setText("null");
+        pm25Text.setText("null");
+        weatherLayout.setVisibility(View.VISIBLE);
+    }
 
+    private void  showForeInfo(List<Forecast> forecastList){
 
-
-
-            String cityName=weather.cityName;
-            String updateTime=weather.now.time;
-            String degree=weather.now.temperature+"℃";
-            String weatherInfo=weather.now.info;
-            titleCity.setText(cityName);
-            titleUpdateTime.setText(updateTime);
-            degreeText.setText(degree);
-            weatherInfoText.setText(weatherInfo);
-            forecastLayout.removeAllViews();
-            for (Forecast forecast:weather.forecastList){
-                View view= LayoutInflater.from(this)
-                        .inflate(R.layout.forecast_item,forecastLayout,false);
-                TextView dateText=(TextView)view.findViewById(R.id.date_text);
-                TextView infoText=(TextView)view.findViewById(R.id.info_text);
-                TextView maxText=(TextView)view.findViewById(R.id.max_text);
-                TextView minText=(TextView)view.findViewById(R.id.min_text);
-                dateText.setText(forecast.date);
-                infoText.setText(forecast.more);
-                maxText.setText(forecast.max_temperature);
-                minText.setText(forecast.min_temperature);
-                forecastLayout.addView(view);
-            }
-            aqiText.setText("null");
-            pm25Text.setText("null");
-            for (Suggestion suggestion:weather.suggestionList){
-                if(suggestion.name=="洗车指数"){
-                    String carWash=suggestion.name+":"+suggestion.suggests;
-                    carWashText.setText(carWash);
-                }
-                if(suggestion.name=="运动指数"){
-                    String sport=suggestion.name+":"+suggestion.suggests;
-                    sportText.setText(sport);
-                }
-                if(suggestion.name=="穿衣指数"){
-                    String comfort=suggestion.name+":"+suggestion.suggests;
-                    comfortText.setText(comfort);
-                }
-            }
-
-            weatherLayout.setVisibility(View.VISIBLE);
-        } catch (Exception e) {
-            e.printStackTrace();
+        for (Forecast forecast:forecastList){
+            View view= LayoutInflater.from(this)
+                    .inflate(R.layout.forecast_item,forecastLayout,false);
+            TextView dateText=(TextView)view.findViewById(R.id.date_text);
+            TextView infoText=(TextView)view.findViewById(R.id.info_text);
+            TextView maxText=(TextView)view.findViewById(R.id.max_text);
+            TextView minText=(TextView)view.findViewById(R.id.min_text);
+            dateText.setText(forecast.date);
+            infoText.setText(forecast.more);
+            maxText.setText(forecast.max_temperature);
+            minText.setText(forecast.min_temperature);
+            forecastLayout.addView(view);
         }
+
+        weatherLayout.setVisibility(View.VISIBLE);
+    }
+    private void  showSuggestInfo(List<Suggestion> suggestionList){
+
+        for (Suggestion suggestion:suggestionList){
+            if(suggestion.name.equals("洗车指数")){
+                String carWash=suggestion.name+":"+suggestion.text;
+                carWashText.setText(carWash);
+            }
+            if(suggestion.name.equals("运动指数")){
+                String sport=suggestion.name+":"+suggestion.text;
+                sportText.setText(sport);
+            }
+            if(suggestion.name.equals("穿衣指数")){
+                String comfort=suggestion.name+":"+suggestion.text;
+                comfortText.setText(comfort);
+            }
+        }
+        weatherLayout.setVisibility(View.VISIBLE);
     }
 }

@@ -6,20 +6,13 @@ import java.util.List;
 
 public class Weather {
 
-    public String cityName;
+
 
     public Now now;
     public List<Suggestion> suggestionList;
 
     public List<Forecast> forecastList;
 
-    public String getCityName() {
-        return cityName;
-    }
-
-    public void setCityName(String cityName) {
-        this.cityName = cityName;
-    }
 
     public Now getNow() {
         return now;
