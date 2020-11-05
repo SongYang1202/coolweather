@@ -48,7 +48,7 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView carWashText;
     private TextView sportText;
     private ImageView bingPicImg;
-    private void Intialized(){
+    public void Intialized(){
         forecastLayout.removeAllViews();
         titleCity.setText(null);
         titleUpdateTime.setText(null);
